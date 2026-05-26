@@ -35,8 +35,8 @@
   .grid{display:grid;gap:14px}
   .g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}.g4{grid-template-columns:repeat(4,1fr)}
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  .seance-layout{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
-  .board{position:sticky;top:16px}
+  .seance-layout{display:grid;grid-template-columns:1fr 380px;gap:18px;align-items:start}
+  .board{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto}
   .hyp{border:1px solid var(--line);border-radius:9px;padding:12px 14px;margin-bottom:10px;background:#fff}
   .hyp .tag{display:inline-block;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.02em}
   .hyp h4{margin:0 0 2px;font-size:14px}
@@ -50,12 +50,17 @@
   .p-Peuprobable{border-left:5px solid var(--peu);opacity:.78} .tag-Peuprobable{background:var(--peu-bg);color:var(--peu)}
   .p-Ecartee{border-left:5px solid var(--ecartee);opacity:.6} .p-Ecartee h4{text-decoration:line-through} .tag-Ecartee{background:var(--ecartee-bg);color:var(--ecartee)}
   .test{border:1px solid var(--line);border-radius:9px;padding:14px;margin-bottom:12px}
-  .test .t-name{font-weight:600;font-size:14px}
+  .test.priority{border-color:var(--accent);box-shadow:0 0 0 2px #d4e4f3 inset}
+  .test .t-name{font-weight:600;font-size:14px;display:flex;gap:8px;align-items:center}
   .test .t-hint{font-size:12px;color:var(--muted);margin:2px 0 10px}
+  .test .pbadge{font-size:11px;background:var(--accent);color:#fff;border-radius:5px;padding:1px 6px;font-weight:700}
   .pill{display:inline-block;padding:3px 9px;border-radius:6px;font-size:12px;font-weight:600}
+  .chip{display:inline-block;padding:6px 11px;margin:4px 4px 0 0;border:1px solid #cfe0f0;background:#eaf2fa;color:var(--accent);border-radius:18px;font-size:12.5px;cursor:pointer;font-weight:600}
+  .chip:hover{background:#dceaf6}
   .banner{border-radius:8px;padding:11px 14px;font-size:13.5px;margin-bottom:16px}
   .banner.red{background:var(--ecartee-bg);border:1px solid #e7c4c1;color:#7c2d12}
   .banner.info{background:#eaf2fa;border:1px solid #cfe0f0;color:#1d3a5c}
+  .banner.warn{background:var(--warn-bg);border:1px solid #f1cf99;color:#7a4a04}
   table{width:100%;border-collapse:collapse;font-size:13px}
   th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
   th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
@@ -65,7 +70,22 @@
   .crumb a{color:var(--accent);cursor:pointer;text-decoration:none}
   svg.chart{background:#fff;border:1px solid var(--line);border-radius:8px}
   .method{font-size:12.5px;color:var(--muted);background:#f8fafc;border:1px dashed var(--line);border-radius:8px;padding:12px 14px}
-  @media (max-width:880px){.seance-layout{grid-template-columns:1fr}.board{position:static}.g2,.g3,.g4{grid-template-columns:1fr 1fr}}
+  .cluster{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:8px 0;background:#fff}
+  .cluster.full{border-color:var(--probable);background:var(--probable-bg)}
+  .cluster .c-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .cluster .c-name{font-weight:600;font-size:13px}
+  .cluster .c-prog{font-size:12px;font-weight:700;color:var(--muted)}
+  .cluster.full .c-prog{color:var(--probable)}
+  .cluster ul{list-style:none;margin:6px 0 0;padding:0;font-size:12px;color:var(--muted)}
+  .cluster li{padding:1px 0 1px 18px;position:relative}
+  .cluster li:before{content:"☐";position:absolute;left:0}
+  .cluster li.ok{color:#0f7b4a}.cluster li.ok:before{content:"☑";color:var(--probable)}
+  .spadi-q{display:grid;grid-template-columns:1fr 110px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px dashed #eef2f7}
+  .spadi-q:last-child{border-bottom:none}
+  .spadi-q .q-text{font-size:13px}
+  .spadi-totals{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;margin-top:10px;padding:9px 12px;background:#f8fafc;border-radius:7px}
+  .spadi-totals b{color:var(--accent)}
+  @media (max-width:880px){.seance-layout{grid-template-columns:1fr}.board{position:static;max-height:none}.g2,.g3,.g4{grid-template-columns:1fr 1fr}}
   @media print{
     header,.no-print{display:none!important}
     body{background:#fff} .wrap{margin:0;max-width:none}
@@ -76,7 +96,7 @@
 <body>
 <header>
   <h1>Bilan kiné épaule — aide au raisonnement clinique</h1>
-  <span class="demo">PROTOTYPE · données fictives · stockage local navigateur (hors HDS)</span>
+  <span class="demo">PROTOTYPE v1.1 · données fictives · stockage local navigateur (hors HDS)</span>
 </header>
 <div class="wrap" id="app"></div>
 
@@ -84,9 +104,9 @@
 /* ============================================================================
    RÉFÉRENTIEL CLINIQUE  —  À VALIDER PAR UN KINÉ
    ----------------------------------------------------------------------------
-   Contenu sourcé de la littérature standard sur l'épaule (tests spéciaux,
-   logique de cluster). Les SEUILS chiffrés sont des ordres de grandeur à
-   confronter aux kinés : ils se modifient ICI, sans toucher au reste du code.
+   v1.1 — ajouts : SPADI (score fonctionnel validé), clusters nommés visibles,
+   suggestion algorithmique du prochain test discriminant, côté concerné,
+   a priori négatifs liés à l'âge.
 
    PARTI PRIS ANTI-NAÏVETÉ (différenciateur clé vs apps administratives) :
    - Aucun test isolé ne "confirme" ni n'"élimine" à lui seul.
@@ -100,6 +120,8 @@
    Pondération : ruleInStrong +3 · ruleInWeak +1 · ruleOutWeak -1 ·
    ruleOutStrong -3 · eliminate -> Écartée.
    Palier : score>=2 Probable · score<=-2 Peu probable · sinon À explorer.
+   Les CLUSTERS nommés n'ajoutent pas de bonus au score : ils rendent la
+   logique cluster déjà à l'œuvre visible et auditable.
    ========================================================================== */
 
 const HYPOTHESES = [
@@ -113,6 +135,29 @@ const HYPOTHESES = [
    profil:'Sujet jeune · sport armé · sensation de déboîtement · appréhension'},
 ];
 
+/* ===== SPADI (Shoulder Pain and Disability Index, version française validée) =====
+   13 items sur EVA 0-10 (douleur 5 items, fonction 8 items).
+   Score Douleur = somme/(items×10) × 100  ·  Score Fonction = idem  ·  Total = (D+F)/2  */
+const SPADI_ITEMS = {
+  pain: [
+    {k:'p1', q:'Quelle est votre douleur dans le pire des cas ?'},
+    {k:'p2', q:'…quand vous êtes allongé sur le côté atteint ?'},
+    {k:'p3', q:'…en attrapant un objet sur une étagère haute ?'},
+    {k:'p4', q:'…en touchant l\'arrière de votre cou ?'},
+    {k:'p5', q:'…en poussant avec le bras atteint ?'},
+  ],
+  fct: [
+    {k:'d1', q:'Difficulté à vous laver les cheveux'},
+    {k:'d2', q:'…à vous laver le dos'},
+    {k:'d3', q:'…à enfiler un maillot de corps ou un pull'},
+    {k:'d4', q:'…à enfiler une chemise qui se boutonne devant'},
+    {k:'d5', q:'…à mettre votre pantalon'},
+    {k:'d6', q:'…à poser un objet sur une étagère haute'},
+    {k:'d7', q:'…à porter un objet lourd (~5 kg)'},
+    {k:'d8', q:'…à sortir un objet de votre poche arrière'},
+  ],
+};
+
 function num(v){ if(v===''||v==null) return null; const n=Number(v); return Number.isNaN(n)?null:n; }
 
 /* Signaux issus du contexte / anamnèse (raisonnement réel : pas qu'un formulaire) */
@@ -121,9 +166,19 @@ function contextSignals(s){
   const age=num(c.age);
   if(age!=null && age>=55) out.push({hypo:'H3',type:'ruleInWeak',note:'Âge ≥ 55 ans : rupture dégénérative plus fréquente'});
   if(age!=null && age<=35 && age>0) out.push({hypo:'H4',type:'ruleInWeak',note:'Sujet jeune : instabilité plus fréquente'});
+  /* A priori négatifs liés à l'âge (v1.1) : un 65 ans sans trauma ne devrait pas
+     démarrer avec "Instabilité à explorer", ni un 25 ans avec "Rupture à explorer".
+     Forts car combinés à des négatifs corroborants (pas d'ATCD, pas de trauma) :
+     la prévalence d'une instabilité de novo > 50 ans est ~1 %, idem rupture < 35 ans. */
+  if(age!=null && age>50 && !c.atcdLuxation && c.debut!=='traumatique')
+    out.push({hypo:'H4',type:'ruleOutStrong',note:'Âge > 50, pas d\'ATCD, pas de trauma : instabilité très peu probable'});
+  if(age!=null && age<35 && age>0 && c.debut!=='traumatique')
+    out.push({hypo:'H3',type:'ruleOutStrong',note:'Sujet jeune sans trauma : rupture de coiffe très peu probable'});
   if(c.debut==='insidieux') out.push({hypo:'H2',type:'ruleInWeak',note:'Début insidieux : compatible capsulite'});
-  if(c.debut==='traumatique'){ out.push({hypo:'H3',type:'ruleInWeak',note:'Début traumatique : penser rupture'});
-    out.push({hypo:'H4',type:'ruleInWeak',note:'Début traumatique : penser instabilité (luxation ?)'}); }
+  if(c.debut==='traumatique'){
+    out.push({hypo:'H3',type:'ruleInWeak',note:'Début traumatique : penser rupture'});
+    out.push({hypo:'H4',type:'ruleInWeak',note:'Début traumatique : penser instabilité (luxation ?)'});
+  }
   if(c.atcdLuxation) out.push({hypo:'H4',type:'ruleInWeak',note:'ATCD de luxation gléno-humérale'});
   if(c.diabete) out.push({hypo:'H2',type:'ruleInWeak',note:'Diabète : facteur de risque majeur de capsulite'});
   if(num(d.nuit)!=null && num(d.nuit)>=5) out.push({hypo:'H2',type:'ruleInWeak',note:'Douleur nocturne marquée'});
@@ -131,54 +186,67 @@ function contextSignals(s){
 }
 
 /* Chaque test : champs chiffrés (stockés -> suivi longitudinal) + règle d'impact.
-   evaluate() ne renvoie de signal QUE si le test a été renseigné.            */
+   evaluate() ne renvoie de signal QUE si le test a été renseigné.
+   potentials : univers des signaux possibles (sert au moteur de suggestion). */
 const TESTS = [
   {id:'arc', nom:'Arc douloureux', hint:'Douleur en abduction active dans le secteur 60–120°.',
-   fields:[{k:'present',l:'Présent ?',t:'oui-non'},{k:'debut',l:'Début (°)',t:'num'},{k:'fin',l:'Fin (°)',t:'num'}],
+   fields:[{k:'present',l:'Présent ?',t:'oui-non'},{k:'debut',l:'Début (°)',t:'num',min:0,max:180},{k:'fin',l:'Fin (°)',t:'num',min:0,max:180}],
+   potentials:[{hypo:'H1',type:'ruleInWeak'}],
    evaluate(v){ if(v.present!=='oui') return []; const lo=num(v.debut)??60, hi=num(v.fin)??120;
      return (hi>=60 && lo<=120)?[{hypo:'H1',type:'ruleInWeak',note:`Arc douloureux ${num(v.debut)??'?'}–${num(v.fin)??'?'}° : compatible conflit sous-acromial`}]:[]; }},
 
   {id:'neer', nom:'Neer', hint:'Conflit sous-acromial (test sensible, peu spécifique).',
-   fields:[{k:'res',l:'Résultat',t:'pos-neg'},{k:'douleur',l:'Douleur (/10)',t:'num'}],
+   fields:[{k:'res',l:'Résultat',t:'pos-neg'},{k:'douleur',l:'Douleur (/10)',t:'num',min:0,max:10}],
+   potentials:[{hypo:'H1',type:'ruleInWeak'},{hypo:'H1',type:'ruleOutWeak'}],
    evaluate(v){ if(!v.res) return []; return v.res==='positif'
      ?[{hypo:'H1',type:'ruleInWeak',note:'Neer positif'}]
      :[{hypo:'H1',type:'ruleOutWeak',note:'Neer négatif (test sensible : argument contre le conflit)'}]; }},
 
   {id:'hawkins', nom:'Hawkins-Kennedy', hint:'Conflit sous-acromial (test sensible, peu spécifique).',
-   fields:[{k:'res',l:'Résultat',t:'pos-neg'},{k:'douleur',l:'Douleur (/10)',t:'num'}],
+   fields:[{k:'res',l:'Résultat',t:'pos-neg'},{k:'douleur',l:'Douleur (/10)',t:'num',min:0,max:10}],
+   potentials:[{hypo:'H1',type:'ruleInWeak'},{hypo:'H1',type:'ruleOutWeak'}],
    evaluate(v){ if(!v.res) return []; return v.res==='positif'
      ?[{hypo:'H1',type:'ruleInWeak',note:'Hawkins-Kennedy positif'}]
      :[{hypo:'H1',type:'ruleOutWeak',note:'Hawkins-Kennedy négatif (test sensible : argument contre le conflit)'}]; }},
 
   {id:'jobe', nom:'Jobe (empty can)', hint:'Supra-épineux. DOULEUR → tendinopathie ; FAIBLESSE franche → suspecter rupture.',
-   fields:[{k:'douleur',l:'Douleur (/10)',t:'num'},{k:'force',l:'Force (/5)',t:'num'}],
+   fields:[{k:'douleur',l:'Douleur (/10)',t:'num',min:0,max:10},{k:'force',l:'Force (/5)',t:'num',min:0,max:5}],
+   potentials:[{hypo:'H1',type:'ruleInWeak'},{hypo:'H3',type:'ruleInWeak'}],
    evaluate(v){ const out=[], dl=num(v.douleur), f=num(v.force);
      if(dl!=null && dl>=3) out.push({hypo:'H1',type:'ruleInWeak',note:`Jobe douloureux (${dl}/10) : souffrance supra-épineux`});
      if(f!=null && f<=3) out.push({hypo:'H3',type:'ruleInWeak',note:`Faiblesse au Jobe (${f}/5) : suspicion rupture supra-épineux`});
      return out; }},
 
-  {id:'patte', nom:'Patte (RE résistée à 90°)', hint:'Infra-épineux / petit rond.',
-   fields:[{k:'douleur',l:'Douleur (/10)',t:'num'},{k:'force',l:'Force (/5)',t:'num'}],
-   evaluate(v){ const f=num(v.force); return (f!=null && f<=3)
-     ?[{hypo:'H3',type:'ruleInWeak',note:`Faiblesse en rotation externe (${f}/5) : déficit infra-épineux`}]:[]; }},
+  {id:'patte', nom:'Patte (RE résistée à 90°)', hint:'Infra-épineux / petit rond. DOULEUR + faiblesse possibles.',
+   fields:[{k:'douleur',l:'Douleur (/10)',t:'num',min:0,max:10},{k:'force',l:'Force (/5)',t:'num',min:0,max:5}],
+   potentials:[{hypo:'H1',type:'ruleInWeak'},{hypo:'H3',type:'ruleInWeak'}],
+   evaluate(v){ const out=[], dl=num(v.douleur), f=num(v.force);
+     /* v1.1 : RE résistée douloureuse est aussi un signe de souffrance de coiffe (composante du cluster de Park pour H1). */
+     if(dl!=null && dl>=3) out.push({hypo:'H1',type:'ruleInWeak',note:`RE résistée douloureuse (${dl}/10) : composante coiffe/conflit`});
+     if(f!=null && f<=3) out.push({hypo:'H3',type:'ruleInWeak',note:`Faiblesse en rotation externe (${f}/5) : déficit infra-épineux`});
+     return out; }},
 
   {id:'liftoff', nom:'Lift-off / Belly-press', hint:'Sous-scapulaire.',
    fields:[{k:'res',l:'Résultat',t:'pos-neg'}],
+   potentials:[{hypo:'H3',type:'ruleInWeak'}],
    evaluate(v){ return v.res==='positif'
      ?[{hypo:'H3',type:'ruleInWeak',note:'Lift-off / Belly-press positif : déficit sous-scapulaire'}]:[]; }},
 
   {id:'drop_arm', nom:'Drop arm test', hint:'Rupture de coiffe (test spécifique : positif = argument fort).',
    fields:[{k:'res',l:'Résultat',t:'pos-neg'}],
+   potentials:[{hypo:'H3',type:'ruleInStrong'}],
    evaluate(v){ return v.res==='positif'
      ?[{hypo:'H3',type:'ruleInStrong',note:'Drop arm positif : forte suspicion de rupture de coiffe'}]:[]; }},
 
   {id:'lag_re', nom:'Lag sign rotation externe', hint:'Rupture transfixiante (test spécifique).',
-   fields:[{k:'res',l:'Résultat',t:'pos-neg'},{k:'lag',l:'Lag (°)',t:'num'}],
+   fields:[{k:'res',l:'Résultat',t:'pos-neg'},{k:'lag',l:'Lag (°)',t:'num',min:0,max:90}],
+   potentials:[{hypo:'H3',type:'ruleInStrong'}],
    evaluate(v){ return v.res==='positif'
      ?[{hypo:'H3',type:'ruleInStrong',note:`Lag sign RE positif${num(v.lag)!=null?` (${num(v.lag)}°)`:''} : rupture transfixiante probable`}]:[]; }},
 
   {id:'re1_passive', nom:'RE1 passive (coude au corps) — bilatéral', hint:'TEST CLÉ capsulite. Comparer côté atteint vs côté sain.',
-   fields:[{k:'atteint',l:'Côté atteint (°)',t:'num'},{k:'sain',l:'Côté sain (°)',t:'num'}],
+   fields:[{k:'atteint',l:'Côté atteint (°)',t:'num',min:0,max:120},{k:'sain',l:'Côté sain (°)',t:'num',min:0,max:120}],
+   potentials:[{hypo:'H2',type:'ruleInStrong'},{hypo:'H2',type:'eliminate'},{hypo:'H1',type:'ruleOutWeak'}],
    evaluate(v){ const a=num(v.atteint), s=num(v.sain); if(a==null) return [];
      const def=(s!=null&&s>0)?(s-a)/s:null; const out=[];
      if(a<30 || (def!=null && def>=0.5)){
@@ -191,9 +259,10 @@ const TESTS = [
      }
      return out; }},
 
-  {id:'mobilite', nom:'Mobilité active vs passive — bilatéral', hint:'Concordant actif=passif global → capsulite ; actif << passif → déficit de coiffe ; passif conservé → conflit.',
-   fields:[{k:'flex_a',l:'Flexion active (°)',t:'num'},{k:'flex_p',l:'Flexion passive (°)',t:'num'},
-           {k:'abd_a',l:'Abduction active (°)',t:'num'},{k:'abd_p',l:'Abduction passive (°)',t:'num'}],
+  {id:'mobilite', nom:'Mobilité active vs passive', hint:'Concordant actif=passif global → capsulite ; actif << passif → déficit de coiffe ; passif conservé → conflit.',
+   fields:[{k:'flex_a',l:'Flexion active (°)',t:'num',min:0,max:180},{k:'flex_p',l:'Flexion passive (°)',t:'num',min:0,max:180},
+           {k:'abd_a',l:'Abduction active (°)',t:'num',min:0,max:180},{k:'abd_p',l:'Abduction passive (°)',t:'num',min:0,max:180}],
+   potentials:[{hypo:'H2',type:'ruleInWeak'},{hypo:'H3',type:'ruleInWeak'},{hypo:'H1',type:'ruleInWeak'},{hypo:'H2',type:'ruleOutWeak'}],
    evaluate(v){ const out=[]; const fa=num(v.flex_a),fp=num(v.flex_p),aa=num(v.abd_a),ap=num(v.abd_p);
      if(fp!=null&&ap!=null&&fp<140&&ap<140) out.push({hypo:'H2',type:'ruleInWeak',note:'Limitation passive multidirectionnelle : compatible capsulite'});
      const gF=(fp!=null&&fa!=null)?fp-fa:null, gA=(ap!=null&&aa!=null)?ap-aa:null;
@@ -206,6 +275,7 @@ const TESTS = [
 
   {id:'apprehension', nom:'Appréhension + Relocation', hint:'Instabilité antérieure. APPRÉHENSION (sensation de déboîtement) ≠ douleur.',
    fields:[{k:'app',l:'Appréhension ?',t:'oui-non'},{k:'reloc',l:'Relocation soulage ?',t:'oui-non-na'}],
+   potentials:[{hypo:'H4',type:'ruleInStrong'},{hypo:'H4',type:'ruleOutStrong'}],
    evaluate(v){ if(!v.app) return [];
      if(v.app==='non') return [{hypo:'H4',type:'ruleOutStrong',note:'Pas d\'appréhension : instabilité peu probable'}];
      return v.reloc==='oui'
@@ -213,9 +283,46 @@ const TESTS = [
        :[{hypo:'H4',type:'ruleInWeak',note:'Appréhension présente'}]; }},
 
   {id:'sulcus', nom:'Sulcus sign', hint:'Hyperlaxité / instabilité inférieure (grade 0–3).',
-   fields:[{k:'grade',l:'Grade (0–3)',t:'num'}],
+   fields:[{k:'grade',l:'Grade (0–3)',t:'num',min:0,max:3}],
+   potentials:[{hypo:'H4',type:'ruleInWeak'}],
    evaluate(v){ const g=num(v.grade); return (g!=null&&g>=2)
      ?[{hypo:'H4',type:'ruleInWeak',note:`Sulcus grade ${g} : hyperlaxité`}]:[]; }},
+];
+
+/* ===== Clusters cliniques nommés =====
+   Pure logique d'affichage : on ne ré-ajoute PAS de bonus au score (pour ne pas
+   double-compter les signaux individuels déjà émis par les tests).
+   Valeur : rendre explicite et auditable le cluster en train de se constituer. */
+const CLUSTERS = [
+  { id:'park', nom:'Cluster de Park (conflit sous-acromial)', hypo:'H1',
+    items:[
+      {label:'Hawkins-Kennedy positif', test:s=>s.tests?.hawkins?.res==='positif'},
+      {label:'Arc douloureux (60–120°)', test:s=>s.tests?.arc?.present==='oui'},
+      {label:'RE résistée (Patte) douloureuse', test:s=>num(s.tests?.patte?.douleur)>=3},
+    ]},
+  { id:'rupture', nom:'Cluster rupture de coiffe', hypo:'H3',
+    items:[
+      {label:'Drop arm positif', test:s=>s.tests?.drop_arm?.res==='positif'},
+      {label:'Faiblesse au Jobe (force ≤ 3/5)', test:s=>{const f=num(s.tests?.jobe?.force);return f!=null&&f<=3;}},
+      {label:'Lag sign RE positif', test:s=>s.tests?.lag_re?.res==='positif'},
+    ]},
+  { id:'capsulite', nom:'Cluster capsulite rétractile', hypo:'H2',
+    items:[
+      {label:'RE1 passive très limitée (< 30° ou déficit ≥ 50 %)',
+        test:s=>{const a=num(s.tests?.re1_passive?.atteint),sa=num(s.tests?.re1_passive?.sain);
+          if(a==null) return false; if(a<30) return true;
+          return sa!=null&&sa>0&&(sa-a)/sa>=0.5;}},
+      {label:'Limitation passive multidirectionnelle (flexion & abd < 140°)',
+        test:s=>{const m=s.tests?.mobilite;return m&&num(m.flex_p)<140&&num(m.abd_p)<140;}},
+      {label:'Début insidieux et/ou diabète', test:s=>s.context?.debut==='insidieux'||!!s.context?.diabete},
+    ]},
+  { id:'instab', nom:'Cluster instabilité antérieure', hypo:'H4',
+    items:[
+      {label:'Appréhension présente', test:s=>s.tests?.apprehension?.app==='oui'},
+      {label:'Relocation positive', test:s=>s.tests?.apprehension?.reloc==='oui'},
+      {label:'ATCD de luxation', test:s=>!!s.context?.atcdLuxation},
+      {label:'Sujet jeune (≤ 35 ans)', test:s=>{const a=num(s.context?.age);return a!=null&&a<=35;}},
+    ]},
 ];
 
 const W={ruleInStrong:3,ruleInWeak:1,ruleOutWeak:-1,ruleOutStrong:-3};
@@ -246,15 +353,67 @@ function computeReasoning(s){
   return res;
 }
 
+/* ===== SPADI : calcul des scores ===== */
+function spadiScores(s){
+  if(!s.spadi) return null;
+  const P=SPADI_ITEMS.pain.map(it=>num(s.spadi[it.k]));
+  const D=SPADI_ITEMS.fct .map(it=>num(s.spadi[it.k]));
+  const pSum=P.reduce((a,b)=>a+(b||0),0), pAns=P.filter(v=>v!=null).length;
+  const dSum=D.reduce((a,b)=>a+(b||0),0), dAns=D.filter(v=>v!=null).length;
+  if(pAns===0 && dAns===0) return null;
+  const pain = pAns>0 ? (pSum/(pAns*10))*100 : null;
+  const fct  = dAns>0 ? (dSum/(dAns*10))*100 : null;
+  const tot  = (pain!=null && fct!=null) ? (pain+fct)/2 : (pain!=null?pain:fct);
+  return {pain, fct, tot, pAns, dAns, complete: pAns===5 && dAns===8};
+}
+
+/* ===== Suggestion algorithmique du prochain test discriminant =====
+   Pour chaque test non renseigné, calcule un score de discrimination basé sur :
+   - le poids potentiel maximal du signal
+   - l'état actuel des hypothèses concernées (les indécises pèsent plus)
+   - bonus si le test peut "eliminate" (capacité décisionnelle propre)            */
+function isAnswered(s, t){
+  const v=(s.tests||{})[t.id]; if(!v) return false;
+  return t.fields.some(f=>{ const x=v[f.k]; return x!=null && x!=='' && x!==false; });
+}
+function suggestedTests(s, paliers){
+  const scored=[];
+  TESTS.forEach(t=>{
+    if(isAnswered(s,t)) return;
+    let sc=0;
+    (t.potentials||[]).forEach(p=>{
+      const weight = p.type==='eliminate' ? 5 : Math.abs(W[p.type]||0);
+      const hp = paliers[p.hypo]?.palier;
+      const factor = hp==='À explorer'?2 : (hp==='Écartée'?0 : 1);
+      sc += weight*factor;
+    });
+    if(sc>0) scored.push({t, sc});
+  });
+  scored.sort((a,b)=>b.sc-a.sc);
+  return scored.slice(0,3).map(x=>x.t);
+}
+
+/* ===== État des clusters ===== */
+function clusterStatuses(s){
+  return CLUSTERS.map(c=>{
+    const items=c.items.map(it=>({label:it.label, ok:!!it.test(s)}));
+    const ok=items.filter(i=>i.ok).length;
+    return {id:c.id, nom:c.nom, hypo:c.hypo, items, ok, total:items.length, full:ok===items.length};
+  });
+}
+
 /* ===== Métriques chiffrées suivies dans le temps ===== */
 const METRICS=[
-  {id:'eva_act',  l:'Douleur en activité (/10)', g:s=>num(s.douleur&&s.douleur.activite)},
-  {id:'eva_nuit', l:'Douleur nocturne (/10)',    g:s=>num(s.douleur&&s.douleur.nuit)},
-  {id:'eva_repos',l:'Douleur au repos (/10)',    g:s=>num(s.douleur&&s.douleur.repos)},
-  {id:'flex_a',   l:'Flexion active (°)',        g:s=>num(s.tests&&s.tests.mobilite&&s.tests.mobilite.flex_a)},
-  {id:'abd_a',    l:'Abduction active (°)',      g:s=>num(s.tests&&s.tests.mobilite&&s.tests.mobilite.abd_a)},
-  {id:'re1',      l:'RE1 passive atteint (°)',   g:s=>num(s.tests&&s.tests.re1_passive&&s.tests.re1_passive.atteint)},
-  {id:'jobe_f',   l:'Force Jobe (/5)',           g:s=>num(s.tests&&s.tests.jobe&&s.tests.jobe.force)},
+  {id:'spadi_tot',l:'SPADI total (/100, ↓ = mieux)',g:s=>{const x=spadiScores(s);return x?Math.round(x.tot*10)/10:null;}},
+  {id:'spadi_p',  l:'SPADI douleur (/100)',         g:s=>{const x=spadiScores(s);return x&&x.pain!=null?Math.round(x.pain*10)/10:null;}},
+  {id:'spadi_f',  l:'SPADI fonction (/100)',        g:s=>{const x=spadiScores(s);return x&&x.fct!=null?Math.round(x.fct*10)/10:null;}},
+  {id:'eva_act',  l:'Douleur en activité (/10)',    g:s=>num(s.douleur&&s.douleur.activite)},
+  {id:'eva_nuit', l:'Douleur nocturne (/10)',       g:s=>num(s.douleur&&s.douleur.nuit)},
+  {id:'eva_repos',l:'Douleur au repos (/10)',       g:s=>num(s.douleur&&s.douleur.repos)},
+  {id:'flex_a',   l:'Flexion active (°)',           g:s=>num(s.tests&&s.tests.mobilite&&s.tests.mobilite.flex_a)},
+  {id:'abd_a',    l:'Abduction active (°)',         g:s=>num(s.tests&&s.tests.mobilite&&s.tests.mobilite.abd_a)},
+  {id:'re1',      l:'RE1 passive atteint (°)',      g:s=>num(s.tests&&s.tests.re1_passive&&s.tests.re1_passive.atteint)},
+  {id:'jobe_f',   l:'Force Jobe (/5)',              g:s=>num(s.tests&&s.tests.jobe&&s.tests.jobe.force)},
 ];
 
 /* ===== Persistance locale ===== */
@@ -269,6 +428,8 @@ function setPath(o,p,val){ const ks=p.split('.'); let c=o; ks.slice(0,-1).forEac
 let state={view:'patients',patientId:null,seanceId:null};
 const patient=()=>DB.patients.find(p=>p.id===state.patientId);
 const seance=()=>{ const p=patient(); return p&&p.seances.find(s=>s.id===state.seanceId); };
+
+const COTE_LABEL={droit:'Épaule droite',gauche:'Épaule gauche',bilateral:'Bilatéral'};
 
 /* ===== Graphe SVG (zéro dépendance, hors-ligne) ===== */
 function chart(points,label){
@@ -293,7 +454,10 @@ function chart(points,label){
 /* ===== Champs de test ===== */
 function field(testId,f,val,prevVal){
   const name=`tests.${testId}.${f.k}`, ph=prevVal!=null&&prevVal!==''?`préc. : ${esc(prevVal)}`:'';
-  if(f.t==='num') return `<div><label class="f">${esc(f.l)}</label><input type="number" step="any" name="${name}" value="${val!=null?esc(val):''}" placeholder="${ph}"></div>`;
+  if(f.t==='num'){
+    const mn=f.min!=null?` min="${f.min}"`:'', mx=f.max!=null?` max="${f.max}"`:'';
+    return `<div><label class="f">${esc(f.l)}</label><input type="number" step="any"${mn}${mx} name="${name}" value="${val!=null?esc(val):''}" placeholder="${ph}"></div>`;
+  }
   const opts={'oui-non':[['','—'],['oui','Oui'],['non','Non']],
               'oui-non-na':[['','—'],['oui','Oui'],['non','Non'],['na','N/A']],
               'pos-neg':[['','—'],['positif','Positif'],['negatif','Négatif']]}[f.t];
@@ -304,6 +468,8 @@ function field(testId,f,val,prevVal){
 function boardHtml(s){
   const r=computeReasoning(s);
   const ordered=[...HYPOTHESES].sort((a,b)=>PALIER_ORDER[r[a.id].palier]-PALIER_ORDER[r[b.id].palier]);
+  const next=suggestedTests(s,r);
+  const clusters=clusterStatuses(s);
   return `<div class="card"><h2>Hypothèses diagnostiques</h2>
     <p class="muted small" style="margin-top:-8px">Réévaluées en direct à chaque saisie. Le « pourquoi » est explicite.</p>`+
     ordered.map(h=>{ const x=r[h.id], cls=PALIER_CLASS[x.palier];
@@ -313,7 +479,35 @@ function boardHtml(s){
         <div class="muted small">${esc(h.court)}</div>
         <ul class="reasons">${ x.reasons.length? x.reasons.map(rr=>`<li class="${rr.warn?'warn':rr.neg?'neg':''}">${esc(rr.txt)}</li>`).join('') : '<li style="color:#94a3b8">Aucun signe encore renseigné</li>' }</ul>
       </div>`; }).join('')+
-    `<div class="method">Méthode : raisonnement par <b>cluster</b> (accumulation de signes), pas par test isolé. Un seul test peut « écarter » : la RE1 passive normale et symétrique (test sensible). Seuils chiffrés à valider avec les kinés.</div></div>`;
+    `${next.length?`<div style="margin-top:14px"><h3 style="margin-top:6px">Tests prioritaires à faire ensuite</h3>
+      <div class="muted small" style="margin:-4px 0 6px">Sélectionnés pour départager au mieux les hypothèses encore indécises.</div>
+      ${next.map(t=>`<span class="chip" onclick="scrollTest('${t.id}')">→ ${esc(t.nom)}</span>`).join('')}
+     </div>`:''}
+    <h3 style="margin-top:18px">Clusters cliniques</h3>
+    ${clusters.map(c=>`<div class="cluster ${c.full?'full':''}">
+      <div class="c-head"><span class="c-name">${esc(c.nom)}</span><span class="c-prog">${c.ok}/${c.total}</span></div>
+      <ul>${c.items.map(i=>`<li class="${i.ok?'ok':''}">${esc(i.label)}</li>`).join('')}</ul>
+      ${c.full?`<div class="small" style="margin-top:6px;color:var(--probable);font-weight:600">→ Cluster complet : ${esc(HYPOTHESES.find(h=>h.id===c.hypo).nom)} fortement évoquée</div>`:''}
+    </div>`).join('')}
+    <div class="method" style="margin-top:14px">Méthode : raisonnement par <b>cluster</b> (accumulation de signes), pas par test isolé. Un seul test peut « écarter » : la RE1 passive normale et symétrique (test sensible). Seuils à valider avec les kinés.</div></div>`;
+}
+
+/* ===== SPADI : rendu du formulaire ===== */
+function spadiSection(s){
+  const sp=s.spadi||{}; const sc=spadiScores(s);
+  const row=(it,prefix)=>`<div class="spadi-q"><div class="q-text">${esc(it.q)}</div>
+    <input type="number" min="0" max="10" step="any" name="spadi.${it.k}" value="${sp[it.k]!=null?esc(sp[it.k]):''}" placeholder="0–10"></div>`;
+  return `<div class="card"><h2>3 · SPADI <span class="muted small" style="font-weight:400">(Shoulder Pain and Disability Index — validé)</span></h2>
+    <h3>Douleur (5 items, EVA 0–10)</h3>
+    ${SPADI_ITEMS.pain.map(it=>row(it,'p')).join('')}
+    <h3>Fonction (8 items, EVA 0–10)</h3>
+    ${SPADI_ITEMS.fct.map(it=>row(it,'d')).join('')}
+    ${sc?`<div class="spadi-totals">
+      <span>Douleur : <b>${sc.pain!=null?Math.round(sc.pain*10)/10:'—'} / 100</b> <span class="muted small">(${sc.pAns}/5)</span></span>
+      <span>Fonction : <b>${sc.fct !=null?Math.round(sc.fct *10)/10:'—'} / 100</b> <span class="muted small">(${sc.dAns}/8)</span></span>
+      <span>Total : <b>${Math.round(sc.tot*10)/10} / 100</b> <span class="muted small">${sc.complete?'complet':'partiel'}</span></span>
+    </div>`:'<div class="muted small" style="margin-top:8px">Renseigne au moins un item pour voir le score.</div>'}
+  </div>`;
 }
 
 /* ===== Rendu principal ===== */
@@ -324,7 +518,7 @@ function render(){
       <p class="muted small">Démonstration — n'utilisez que des données fictives/anonymisées (initiales, année).</p>
       <div class="row" style="margin:14px 0 18px">
         <input id="al" placeholder="Alias (ex. M.D.)" style="max-width:200px">
-        <input id="an" type="number" placeholder="Année naissance" style="max-width:170px">
+        <input id="an" type="number" min="1900" max="2025" placeholder="Année naissance" style="max-width:170px">
         <button class="primary" onclick="addPatient()">+ Nouveau patient</button>
       </div>
       ${DB.patients.length?'':'<p class="muted">Aucun patient. Créez-en un pour démarrer un bilan.</p>'}
@@ -345,9 +539,10 @@ function render(){
       <h3>Historique</h3>
       ${ss.length?'':'<p class="muted">Aucune séance.</p>'}
       ${ss.map(s=>{ const r=computeReasoning(s); const top=[...HYPOTHESES].sort((a,b)=>PALIER_ORDER[r[a.id].palier]-PALIER_ORDER[r[b.id].palier])[0];
+        const sc=spadiScores(s); const cote=s.cote?COTE_LABEL[s.cote]:'';
         return `<div class="list-item">
-          <div style="flex:1" onclick="openSeance('${s.id}')"><b>Séance du ${esc(s.date||'?')}</b><br>
-          <span class="muted small">Hypothèse en tête : ${esc(top? r[top.id].palier+' — '+top.nom :'—')}</span></div>
+          <div style="flex:1" onclick="openSeance('${s.id}')"><b>Séance du ${esc(s.date||'?')}</b> ${cote?`<span class="muted small">· ${esc(cote)}</span>`:''}<br>
+          <span class="muted small">${top? esc(r[top.id].palier+' — '+top.nom) :'—'}${sc?` · SPADI ${Math.round(sc.tot)}/100`:''}</span></div>
           <button onclick="openBilan('${s.id}')">Bilan</button>
           <button class="danger ghost" onclick="delSeance('${s.id}')">Suppr.</button>
         </div>`; }).join('')}</div>
@@ -361,34 +556,41 @@ function render(){
     const rf=s.redFlags||{};
     const anyRf=Object.values(rf).some(Boolean);
     const rfDefs=[['nocturne','Douleur nocturne intense non mécanique'],['trauma','Trauma à haute énergie / suspicion fracture-luxation'],
-      ['neo','ATCD néoplasique'],['fievre','Fièvre / altération état général'],['neuro','Déficit neuro moteur ou amyotrophie'],['mineur','Patient mineur']];
+      ['neo','ATCD néoplasique'],['fievre','Fièvre / altération état général'],['neuro','Déficit neuro moteur ou amyotrophie'],
+      ['cervical','Douleur cervicale irradiante / Spurling positif (projection)'], ['mineur','Patient mineur']];
+    const r=computeReasoning(s);
+    const next=suggestedTests(s,r).map(t=>t.id);
     app.innerHTML=`<div class="crumb"><a onclick="go('patients')">Patients</a> › <a onclick="openPatient('${p.id}')">${esc(p.alias)}</a> › <b>Séance ${esc(s.date)}</b></div>
     <div class="seance-layout">
       <div id="form">
-        ${prev?`<div class="banner info">Séance précédente du <b>${esc(prev.date)}</b> — les valeurs précédentes apparaissent en gris dans les champs. Recontrôlez en priorité les tests qui contribuaient.</div>`:''}
+        ${prev?`<div class="banner info">Séance précédente du <b>${esc(prev.date)}</b> — les valeurs précédentes apparaissent en gris dans les champs.</div>`:''}
         ${anyRf?`<div class="banner red"><b>Drapeaux rouges présents</b> — orientation médicale à envisager avant rééducation.</div>`:''}
         <div class="card"><h2>1 · Dépistage drapeaux rouges</h2>
           ${rfDefs.map(([k,l])=>`<label class="row" style="margin:6px 0"><input type="checkbox" style="width:auto" name="redFlags.${k}" ${rf[k]?'checked':''}> ${esc(l)}</label>`).join('')}
         </div>
-        <div class="card"><h2>2 · Anamnèse & douleur</h2>
-          <div class="grid g3">
-            <div><label class="f">Âge</label><input type="number" name="context.age" value="${esc(getPath(s,'context.age')||'')}"></div>
+        <div class="card"><h2>2 · Anamnèse, côté, douleur</h2>
+          <div class="grid g4">
+            <div><label class="f">Côté concerné</label><select name="cote">
+              ${[['','—'],['droit','Droit'],['gauche','Gauche'],['bilateral','Bilatéral']].map(([v,t])=>`<option value="${v}" ${s.cote===v?'selected':''}>${t}</option>`).join('')}
+            </select></div>
+            <div><label class="f">Âge</label><input type="number" min="0" max="110" name="context.age" value="${esc(getPath(s,'context.age')||'')}"></div>
             <div><label class="f">Début</label><select name="context.debut">
               ${[['','—'],['insidieux','Insidieux'],['progressif','Progressif'],['traumatique','Traumatique']].map(([v,t])=>`<option value="${v}" ${getPath(s,'context.debut')===v?'selected':''}>${t}</option>`).join('')}
             </select></div>
             <div><label class="f">&nbsp;</label><label class="row" style="margin-top:7px"><input type="checkbox" style="width:auto" name="context.atcdLuxation" ${getPath(s,'context.atcdLuxation')?'checked':''}> ATCD luxation</label></div>
             <div><label class="row"><input type="checkbox" style="width:auto" name="context.diabete" ${getPath(s,'context.diabete')?'checked':''}> Diabète</label></div>
-            <div><label class="f">Douleur repos (/10)</label><input type="number" name="douleur.repos" value="${esc(getPath(s,'douleur.repos')||'')}"></div>
-            <div><label class="f">Douleur nocturne (/10)</label><input type="number" name="douleur.nuit" value="${esc(getPath(s,'douleur.nuit')||'')}"></div>
-            <div><label class="f">Douleur activité (/10)</label><input type="number" name="douleur.activite" value="${esc(getPath(s,'douleur.activite')||'')}"></div>
+            <div><label class="f">Douleur repos (/10)</label><input type="number" min="0" max="10" name="douleur.repos" value="${esc(getPath(s,'douleur.repos')||'')}"></div>
+            <div><label class="f">Douleur nocturne (/10)</label><input type="number" min="0" max="10" name="douleur.nuit" value="${esc(getPath(s,'douleur.nuit')||'')}"></div>
+            <div><label class="f">Douleur activité (/10)</label><input type="number" min="0" max="10" name="douleur.activite" value="${esc(getPath(s,'douleur.activite')||'')}"></div>
           </div>
         </div>
-        <div class="card"><h2>3 · Tests cliniques chiffrés</h2>
-          ${TESTS.map(t=>`<div class="test"><div class="t-name">${esc(t.nom)}</div><div class="t-hint">${esc(t.hint)}</div>
+        ${spadiSection(s)}
+        <div class="card"><h2>4 · Tests cliniques chiffrés</h2>
+          ${TESTS.map(t=>`<div class="test ${next.includes(t.id)?'priority':''}" id="test-${t.id}"><div class="t-name">${esc(t.nom)} ${next.includes(t.id)?'<span class="pbadge">Prioritaire</span>':''}</div><div class="t-hint">${esc(t.hint)}</div>
             <div class="grid g${Math.min(t.fields.length,4)}">${t.fields.map(f=>field(t.id,f,getPath(s,`tests.${t.id}.${f.k}`),prev?getPath(prev,`tests.${t.id}.${f.k}`):null)).join('')}</div>
           </div>`).join('')}
         </div>
-        <div class="card"><h2>4 · Conclusion / objectifs</h2>
+        <div class="card"><h2>5 · Conclusion / objectifs</h2>
           <textarea name="conclusion" placeholder="Synthèse, hypothèse retenue, objectifs de rééducation, plan...">${esc(s.conclusion||'')}</textarea>
           <div class="row" style="margin-top:14px">
             <button class="primary" onclick="openBilan('${s.id}')">Générer le bilan</button>
@@ -404,6 +606,14 @@ function render(){
       const val= el.type==='checkbox'? el.checked : el.value;
       setPath(s,nm,val); save();
       document.getElementById('board').innerHTML=boardHtml(s);
+      /* met à jour les badges "Prioritaire" des tests sans casser le focus */
+      const nx=suggestedTests(s,computeReasoning(s)).map(t=>t.id);
+      TESTS.forEach(t=>{ const el2=document.getElementById('test-'+t.id); if(!el2) return;
+        el2.classList.toggle('priority', nx.includes(t.id));
+        const bd=el2.querySelector('.pbadge');
+        if(nx.includes(t.id) && !bd){ el2.querySelector('.t-name').insertAdjacentHTML('beforeend',' <span class="pbadge">Prioritaire</span>'); }
+        else if(!nx.includes(t.id) && bd){ bd.remove(); }
+      });
     };
     form.addEventListener('input',onChange);
     form.addEventListener('change',onChange);
@@ -415,6 +625,8 @@ function render(){
     const r=computeReasoning(s);
     const ordered=[...HYPOTHESES].sort((a,b)=>PALIER_ORDER[r[a.id].palier]-PALIER_ORDER[r[b.id].palier]);
     const rf=s.redFlags||{}; const anyRf=Object.values(rf).some(Boolean);
+    const sc=spadiScores(s);
+    const clusters=clusterStatuses(s).filter(c=>c.ok>0);
     const testRows=TESTS.map(t=>{ const v=(s.tests&&s.tests[t.id])||{};
       const vals=t.fields.map(f=>v[f.k]!=null&&v[f.k]!==''?`${f.l} : ${esc(v[f.k])}`:null).filter(Boolean);
       return vals.length?`<tr><td>${esc(t.nom)}</td><td>${vals.join(' · ')}</td></tr>`:''; }).join('');
@@ -425,14 +637,26 @@ function render(){
     </div>
     <div class="card">
       <h2>Bilan kinésithérapique — épaule</h2>
-      <p class="muted small">${esc(p.alias)} · né(e) ${esc(p.anneeNaissance||'?')} · séance du ${esc(s.date)} — Document de démonstration (données fictives).</p>
+      <p class="muted small">${esc(p.alias)} · né(e) ${esc(p.anneeNaissance||'?')} · ${s.cote?esc(COTE_LABEL[s.cote])+' · ':''}séance du ${esc(s.date)} — Document de démonstration (données fictives).</p>
       ${anyRf?`<div class="banner red"><b>Drapeaux rouges :</b> ${Object.entries(rf).filter(([,x])=>x).map(([k])=>k).join(', ')} — orientation médicale à envisager.</div>`:'<div class="banner info">Dépistage drapeaux rouges : aucun signalé.</div>'}
+
       <h3>Hypothèses & raisonnement</h3>
       <table><thead><tr><th>Hypothèse</th><th>Palier</th><th>Éléments contributifs</th></tr></thead><tbody>
       ${ordered.map(h=>{const x=r[h.id];return `<tr><td><b>${esc(h.nom)}</b><br><span class="muted small">${esc(h.court)}</span></td>
         <td><span class="pill tag-${PALIER_CLASS[x.palier]}">${x.palier}</span></td>
         <td>${x.reasons.length?x.reasons.map(rr=>esc(rr.txt)).join('<br>'):'—'}</td></tr>`;}).join('')}
       </tbody></table>
+
+      ${clusters.length?`<h3>Clusters cliniques activés</h3>
+      <ul>${clusters.map(c=>`<li>${esc(c.nom)} — <b>${c.ok}/${c.total}</b>${c.full?' (complet)':''}</li>`).join('')}</ul>`:''}
+
+      ${sc?`<h3>SPADI</h3>
+      <table><tbody>
+        <tr><td>Douleur</td><td><b>${sc.pain!=null?Math.round(sc.pain*10)/10:'—'} / 100</b></td></tr>
+        <tr><td>Fonction</td><td><b>${sc.fct!=null?Math.round(sc.fct*10)/10:'—'} / 100</b></td></tr>
+        <tr><td>Total</td><td><b>${Math.round(sc.tot*10)/10} / 100</b> <span class="muted small">${sc.complete?'(complet)':'(partiel)'}</span></td></tr>
+      </tbody></table>`:''}
+
       <h3>Mesures chiffrées de la séance</h3>
       <table><thead><tr><th>Test</th><th>Valeurs</th></tr></thead><tbody>${testRows||'<tr><td colspan="2" class="muted">Aucun test renseigné</td></tr>'}</tbody></table>
       ${p.seances.length>1?'<h3>Évolution</h3>'+miniEvolution(p):''}
@@ -444,20 +668,21 @@ function render(){
 }
 
 function evolutionCard(p){
-  state.metric=state.metric||'eva_act';
+  state.metric=state.metric||'spadi_tot';
   const m=METRICS.find(x=>x.id===state.metric)||METRICS[0];
   const ss=[...p.seances].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   const pts=ss.map(s=>({x:(s.date||'').slice(5),y:m.g(s)}));
   return `<div class="card"><h2>Évolution dans le temps</h2>
     <div class="row" style="margin-bottom:12px"><label class="f" style="margin:0">Mesure :</label>
-      <select style="max-width:280px" onchange="state.metric=this.value;render()">
+      <select style="max-width:300px" onchange="state.metric=this.value;render()">
         ${METRICS.map(x=>`<option value="${x.id}" ${x.id===m.id?'selected':''}>${x.l}</option>`).join('')}
       </select></div>
     ${chart(pts,m.l)}</div>`;
 }
 function miniEvolution(p){
   const ss=[...p.seances].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  return [METRICS[0],METRICS[4]].map(m=>`<div style="margin-bottom:10px"><div class="small muted">${m.l}</div>${chart(ss.map(s=>({x:(s.date||'').slice(5),y:m.g(s)})),m.l)}</div>`).join('');
+  const sel=[METRICS[0],METRICS[3],METRICS[8]]; /* SPADI total, douleur activité, RE1 atteint */
+  return sel.map(m=>`<div style="margin-bottom:10px"><div class="small muted">${m.l}</div>${chart(ss.map(s=>({x:(s.date||'').slice(5),y:m.g(s)})),m.l)}</div>`).join('');
 }
 
 /* ===== Actions ===== */
@@ -467,11 +692,12 @@ function addPatient(){ const al=document.getElementById('al').value.trim(), an=d
   DB.patients.push({id:uid(),alias:al,anneeNaissance:an,seances:[]}); save(); render(); }
 function delPatient(id){ if(!confirm('Supprimer ce patient et ses séances ?')) return; DB.patients=DB.patients.filter(p=>p.id!==id); save(); render(); }
 function openPatient(id){ state.patientId=id; state.view='patient'; render(); }
-function newSeance(){ const p=patient(); const s={id:uid(),date:new Date().toISOString().slice(0,10),redFlags:{},context:{},douleur:{},tests:{},conclusion:''};
+function newSeance(){ const p=patient(); const s={id:uid(),date:new Date().toISOString().slice(0,10),cote:'',redFlags:{},context:{},douleur:{},spadi:{},tests:{},conclusion:''};
   p.seances.push(s); save(); state.seanceId=s.id; state.view='seance'; render(); }
 function openSeance(id){ state.seanceId=id; state.view='seance'; render(); }
 function openBilan(id){ state.seanceId=id; state.view='bilan'; render(); }
 function delSeance(id){ if(!confirm('Supprimer cette séance ?')) return; const p=patient(); p.seances=p.seances.filter(s=>s.id!==id); save(); render(); }
+function scrollTest(id){ const el=document.getElementById('test-'+id); if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.transition='box-shadow .2s'; el.style.boxShadow='0 0 0 3px #1d6fb8 inset'; setTimeout(()=>{el.style.boxShadow='';},900); } }
 
 render();
 </script>
